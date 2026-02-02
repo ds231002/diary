@@ -1,0 +1,77 @@
+Table users {
+  id uuid [pk, note: "default gen_random_uuid()"]
+  created_at timestamptz [not null, note: "default now()"]
+  updated_at timestamptz [not null, note: "default now()"]
+  name varchar [not null]
+  is_demo boolean [note: "default false"]
+}
+
+Table entries {
+  id uuid [pk, note: "default gen_random_uuid()"]
+  user_id uuid [not null]
+  created_at timestamptz [not null, note: "default now()"]
+  updated_at timestamptz [not null, note: "default now()"]
+  entry_start_date date [not null]
+  entry_end_date date
+  content text [not null]
+  mood int [note: "check between 0 and 10"]
+  embedding vector
+}
+
+Table tags {
+  id uuid [pk, note: "default gen_random_uuid()"]
+  created_at timestamptz [not null, note: "default now()"]
+  updated_at timestamptz [not null, note: "default now()"]
+  name varchar
+  position int [note: "check (position >= 1)"]
+  favourite boolean [not null, note: "default false"]
+}
+
+Table chats {
+  id uuid [pk, note: "default gen_random_uuid()"]
+  user_id uuid [not null]
+  folder_id uuid
+  created_at timestamptz [not null, note: "default now()"]
+  updated_at timestamptz [not null, note: "default now()"]
+  title varchar
+  start_date date
+  end_date date
+  summary text
+}
+
+Table messages {
+  id uuid [pk, note: "default gen_random_uuid"]
+  chat_id uuid
+  created_at timestamptz [not null, note: "default now()"]
+  role varchar [note: "user | assistant | system"]
+  content text [not null]
+}
+
+Table folders {
+  id uuid [pk, note: "default gen_random_uuid"]
+  user_id uuid [not null]
+  created_at timestamptz [not null, note: "default now()"]
+  updated_at timestamptz [not null, note: "default now()"]
+  name varchar
+  position int [note: "check (position >= 1)"]
+}
+
+Table entry_tags {
+  entry_id uuid
+  tag_id uuid
+}
+
+Table chat_tags {
+  chat_id uuid
+  tag_id uuid
+}
+
+Ref: users.id > entries.user_id
+Ref: users.id > chats.user_id
+Ref: users.id > folders.user_id
+Ref: entry_tags.entry_id > entries.id
+Ref: entry_tags.tag_id > tags.id
+Ref: chat_tags.chat_id > chats.id
+Ref: chat_tags.tag_id > tags.id
+Ref: messages.chat_id > chats.id
+Ref: folders.id < chats.folder_id

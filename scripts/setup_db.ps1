@@ -1,0 +1,1 @@
+docker run --name diary-postgres -e POSTGRES_USER=diary -e POSTGRES_PASSWORD=diary_pw -e POSTGRES_DB=diary -p 5432:5432 -v diary_pgdata:/var/lib/postgresql/data -d pgvector/pgvector:pg16
