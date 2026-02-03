@@ -2,8 +2,16 @@ Table users {
   id uuid [pk, note: "default gen_random_uuid()"]
   created_at timestamptz [not null, note: "default now()"]
   updated_at timestamptz [not null, note: "default now()"]
-  name varchar [not null]
-  is_demo boolean [note: "default false"]
+  user_name varchar [not null]
+  is_demo boolean [not null, note: "default false"]
+}
+
+Table user_profiles {
+  user_id uuid [pk, not null]
+  first_name text
+  last_name text
+  birth_date date
+  summary text
 }
 
 Table entries {
@@ -12,7 +20,7 @@ Table entries {
   created_at timestamptz [not null, note: "default now()"]
   updated_at timestamptz [not null, note: "default now()"]
   entry_start_date date [not null]
-  entry_end_date date
+  entry_end_date date [note: "check(entry_end_date >= entry_start_date)"]
   content text [not null]
   mood int [note: "check between 0 and 10"]
   embedding vector
@@ -20,9 +28,10 @@ Table entries {
 
 Table tags {
   id uuid [pk, note: "default gen_random_uuid()"]
+  user_id uuid [not null]
   created_at timestamptz [not null, note: "default now()"]
   updated_at timestamptz [not null, note: "default now()"]
-  name varchar
+  name varchar [not null]
   position int [note: "check (position >= 1)"]
   favourite boolean [not null, note: "default false"]
 }
@@ -40,7 +49,7 @@ Table chats {
 }
 
 Table messages {
-  id uuid [pk, note: "default gen_random_uuid"]
+  id uuid [pk, note: "default gen_random_uuid()"]
   chat_id uuid
   created_at timestamptz [not null, note: "default now()"]
   role varchar [note: "user | assistant | system"]
@@ -48,7 +57,7 @@ Table messages {
 }
 
 Table folders {
-  id uuid [pk, note: "default gen_random_uuid"]
+  id uuid [pk, note: "default gen_random_uuid()"]
   user_id uuid [not null]
   created_at timestamptz [not null, note: "default now()"]
   updated_at timestamptz [not null, note: "default now()"]
@@ -57,17 +66,19 @@ Table folders {
 }
 
 Table entry_tags {
-  entry_id uuid
-  tag_id uuid
+  entry_id uuid [pk]
+  tag_id uuid [pk]
 }
 
 Table chat_tags {
-  chat_id uuid
-  tag_id uuid
+  chat_id uuid [pk]
+  tag_id uuid [pk]
 }
 
+Ref: users.id < user_profiles.user_id
 Ref: users.id > entries.user_id
 Ref: users.id > chats.user_id
+Ref: users.id > tags.user_id
 Ref: users.id > folders.user_id
 Ref: entry_tags.entry_id > entries.id
 Ref: entry_tags.tag_id > tags.id
