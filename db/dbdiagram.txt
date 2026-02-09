@@ -19,8 +19,8 @@ Table entries {
   user_id uuid [not null]
   created_at timestamptz [not null, note: "default now()"]
   updated_at timestamptz [not null, note: "default now()"]
-  entry_start_date date [not null]
-  entry_end_date date [note: "check(entry_end_date >= entry_start_date)"]
+  start_date date [not null]
+  end_date date [note: "check(entry_end_date >= entry_start_date)"]
   content text [not null]
   mood int [note: "check between 0 and 10"]
   embedding vector
@@ -32,6 +32,7 @@ Table tags {
   created_at timestamptz [not null, note: "default now()"]
   updated_at timestamptz [not null, note: "default now()"]
   name varchar [not null]
+  color text
   position int [note: "check (position >= 1)"]
   favourite boolean [not null, note: "default false"]
 }
