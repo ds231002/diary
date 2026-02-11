@@ -1,17 +1,32 @@
 import streamlit as st
+from dataclasses import dataclass
+from datetime import datetime
 from ui.entries import entries_view
-from ui.llm_panel import llm_panel
-from ui.sidebar import sidebar
 
 st.set_page_config(layout="wide")
 
-sidebar()
+@dataclass
+class Entry:
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    start_date: datetime
+    end_date: datetime
+    content: str
 
-col1, col2 = st.columns([2, 3])
+ENTRIES = [
+    Entry(1, datetime.now(), datetime.now(), datetime.now(), None, "Erster Tagebucheintrag"),
+    Entry(2, datetime.now(), datetime.now(), datetime.now(), None, "Zweiter Eintrag"),
+]
 
-with col1:
-    selected_entry = entries_view()
+st.title("Diary – LLM Playground")
 
-with col2:
-    if selected_entry:
-        llm_panel(selected_entry)
+left, right = st.columns([2, 3])
+
+with left:
+    selected = entries_view(ENTRIES)
+
+with right:
+    if selected:
+        st.text_area("Text", selected.content, height=300)
+

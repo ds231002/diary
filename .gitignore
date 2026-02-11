@@ -1,3 +1,6 @@
+__pycache__
+
 entries/
 .env
 data
+notes.txt
