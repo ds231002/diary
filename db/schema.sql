@@ -50,14 +50,10 @@ CREATE TABLE entries (
   user_id uuid NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  start_date date NOT NULL,
-  end_date date,
+  entry_date date NOT NULL DEFAULT CURRENT_DATE,
   content text NOT NULL,
   mood int,
   embedding vector,
-
-  CONSTRAINT chk_entries_date_range
-    CHECK (end_date IS NULL OR end_date >= start_date),
 
   CONSTRAINT chk_entries_mood_range
     CHECK (mood IS NULL OR mood BETWEEN 0 AND 10),

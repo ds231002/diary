@@ -1,5 +1,6 @@
 from uuid import UUID
 from datetime import date
+from typing import Optional
 from db.database import get_connection
 from db.crud.entry_tags import sync_entry_tags
 
@@ -10,22 +11,33 @@ from db.crud.entry_tags import sync_entry_tags
 def create_entry(
     user_id: UUID,
     *,
-    start_date: date,
     content: str,
-    end_date: date | None = None,
+    entry_date: date | None = None,
     mood: int | None = None,
     tag_ids: list[UUID] | None = None,
 ) -> dict:
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
-                INSERT INTO entries (user_id, start_date, end_date, content, mood)
-                VALUES (%s, %s, %s, %s, %s)
-                RETURNING *;
-                """,
-                (user_id, start_date, end_date, content, mood),
-            )
+
+            if entry_date is None:
+                cur.execute(
+                    """
+                    INSERT INTO entries (user_id, content, mood)
+                    VALUES (%s, %s, %s)
+                    RETURNING *;
+                    """,
+                    (user_id, content, mood),
+                )
+            else:
+                cur.execute(
+                    """
+                    INSERT INTO entries (user_id, entry_date, content, mood)
+                    VALUES (%s, %s, %s, %s)
+                    RETURNING *;
+                    """,
+                    (user_id, entry_date, content, mood),
+                )
+
             entry = cur.fetchone()
 
             if tag_ids:
@@ -59,11 +71,11 @@ def list_entries_by_user(
     values = [user_id]
 
     if from_date is not None:
-        conditions.append("start_date >= %s")
+        conditions.append("entry_date >= %s")
         values.append(from_date)
 
     if to_date is not None:
-        conditions.append("start_date <= %s")
+        conditions.append("entry_date <= %s")
         values.append(to_date)
 
     if mood_min is not None:
@@ -78,7 +90,7 @@ def list_entries_by_user(
     SELECT *
     FROM entries
     WHERE {" AND ".join(conditions)}
-    ORDER BY start_date DESC, created_at DESC
+    ORDER BY entry_date DESC, created_at DESC
     LIMIT %s OFFSET %s;
     """
 
@@ -93,32 +105,33 @@ def list_entries_by_user(
 # UPDATE
 # ==============================
 
+_UNSET = object()
+
 def update_entry(
     entry_id: UUID,
     *,
-    start_date: date | None = None,
-    end_date: date | None = None,
-    content: str | None = None,
-    mood: int | None = None,
+    content: Optional[str] = _UNSET,
+    entry_date: Optional[date] = _UNSET,
+    mood: Optional[int] = _UNSET,
 ) -> dict:
+
     fields = []
     values = []
 
-    if start_date is not None:
-        fields.append("start_date = %s")
-        values.append(start_date)
+    if entry_date is not _UNSET:
+        fields.append("entry_date = %s")
+        values.append(entry_date)
 
-    if end_date is not None:
-        fields.append("end_date = %s")
-        values.append(end_date)
-
-    if content is not None:
+    if content is not _UNSET:
         fields.append("content = %s")
         values.append(content)
 
-    if mood is not None:
-        fields.append("mood = %s")
-        values.append(mood)
+    if mood is not _UNSET:
+        if mood is None:
+            fields.append("mood = NULL")
+        else:
+            fields.append("mood = %s")
+            values.append(mood)
 
     if not fields:
         raise ValueError("No fields to update")

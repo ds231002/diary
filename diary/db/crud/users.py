@@ -37,6 +37,44 @@ def list_users(limit: int = 100, offset: int = 0) -> list[dict]:
             return cur.fetchall()
 
 # ==============================
+# UPDATE
+# ==============================
+
+def update_user(
+    user_id: UUID,
+    *,
+    user_name: str | None = None,
+    is_demo: bool | None = None,
+) -> dict:
+    fields = []
+    values = []
+
+    if user_name is not None:
+        fields.append("user_name = %s")
+        values.append(user_name)
+
+    if is_demo is not None:
+        fields.append("is_demo = %s")
+        values.append(is_demo)
+
+    if not fields:
+        raise ValueError("No fields to update")
+
+    query = f"""
+    UPDATE users
+    SET {", ".join(fields)}
+    WHERE id = %s
+    RETURNING *;
+    """
+
+    values.append(user_id)
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(query, values)
+            return cur.fetchone()
+
+# ==============================
 # DELETE
 # ==============================
 
