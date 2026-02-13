@@ -113,140 +113,140 @@ with tab_edit:
 
     if not entries:
         st.info("Keine Einträge gefunden.")
-        st.stop()
+    else:
 
-    # ----------------------------------------------
-    # AUSWAHL
-    # ----------------------------------------------
+        # ----------------------------------------------
+        # AUSWAHL
+        # ----------------------------------------------
 
-    entry_map = {
-        f"{e['entry_date']} – {e['content'][:100]}": e
-        for e in entries
-    }
+        entry_map = {
+            f"{e['entry_date']} – {e['content'][:100]}": e
+            for e in entries
+        }
 
-    selected_label = st.selectbox(
-        "Eintrag auswählen",
-        list(entry_map.keys()),
-        key="edit_select"
-    )
-
-    selected_entry = entry_map[selected_label]
-
-    st.divider()
-
-    # ----------------------------------------------
-    # FORMULAR
-    # ----------------------------------------------
-
-    left, right = st.columns([1, 3])
-
-    entry_tags = list_tags_for_entry(selected_entry["id"])
-    default_tag_names = [t["name"] for t in entry_tags]
-
-    with left:
-
-        entry_date_input = st.date_input(
-            "Datum",
-            value=selected_entry["entry_date"],
-            key=f"edit_date_{selected_entry['id']}"
+        selected_label = st.selectbox(
+            "Eintrag auswählen",
+            list(entry_map.keys()),
+            key="edit_select"
         )
 
-        tag_selection = st.multiselect(
-            "Tags",
-            list(tag_map.keys()),
-            default=default_tag_names,
-            key=f"edit_tags_{selected_entry['id']}"
-        )
-
-        tag_ids = [tag_map[name] for name in tag_selection]
-
-        use_mood = st.checkbox(
-            "Mood speichern",
-            value=selected_entry.get("mood") is not None,
-            key=f"edit_use_mood_{selected_entry['id']}"
-        )
-
-        if use_mood:
-            mood_input = st.slider(
-                "Mood",
-                1,
-                10,
-                selected_entry.get("mood") or 5,
-                key=f"edit_mood_{selected_entry['id']}"
-            )
-        else:
-            mood_input = None
+        selected_entry = entry_map[selected_label]
 
         st.divider()
 
-        # -----------------------------
-        # SPEICHERN
-        # -----------------------------
+        # ----------------------------------------------
+        # FORMULAR
+        # ----------------------------------------------
 
-        if st.button("Speichern", key=f"save_{selected_entry['id']}"):
+        left, right = st.columns([1, 3])
 
-            update_entry(
-                selected_entry["id"],
-                entry_date=entry_date_input,
-                content=st.session_state[f"edit_content_{selected_entry['id']}"],
-                mood=mood_input,
+        entry_tags = list_tags_for_entry(selected_entry["id"])
+        default_tag_names = [t["name"] for t in entry_tags]
+
+        with left:
+
+            entry_date_input = st.date_input(
+                "Datum",
+                value=selected_entry["entry_date"],
+                key=f"edit_date_{selected_entry['id']}"
             )
 
-            sync_entry_tags(
-                selected_entry["id"],
-                tag_ids
+            tag_selection = st.multiselect(
+                "Tags",
+                list(tag_map.keys()),
+                default=default_tag_names,
+                key=f"edit_tags_{selected_entry['id']}"
             )
 
-            st.success("Eintrag gespeichert.")
-            st.rerun()
+            tag_ids = [tag_map[name] for name in tag_selection]
 
-        # -----------------------------
-        # LÖSCHEN MIT CONFIRM
-        # -----------------------------
+            use_mood = st.checkbox(
+                "Mood speichern",
+                value=selected_entry.get("mood") is not None,
+                key=f"edit_use_mood_{selected_entry['id']}"
+            )
 
-        confirm_key = f"confirm_delete_{selected_entry['id']}"
+            if use_mood:
+                mood_input = st.slider(
+                    "Mood",
+                    1,
+                    10,
+                    selected_entry.get("mood") or 5,
+                    key=f"edit_mood_{selected_entry['id']}"
+                )
+            else:
+                mood_input = None
 
-        if confirm_key not in st.session_state:
-            st.session_state[confirm_key] = False
+            st.divider()
 
-        if not st.session_state[confirm_key]:
+            # -----------------------------
+            # SPEICHERN
+            # -----------------------------
 
-            if st.button("Löschen", key=f"delete_btn_{selected_entry['id']}"):
-                st.session_state[confirm_key] = True
+            if st.button("Speichern", key=f"save_{selected_entry['id']}"):
+
+                update_entry(
+                    selected_entry["id"],
+                    entry_date=entry_date_input,
+                    content=st.session_state[f"edit_content_{selected_entry['id']}"],
+                    mood=mood_input,
+                )
+
+                sync_entry_tags(
+                    selected_entry["id"],
+                    tag_ids
+                )
+
+                st.success("Eintrag gespeichert.")
                 st.rerun()
 
-        else:
+            # -----------------------------
+            # LÖSCHEN MIT CONFIRM
+            # -----------------------------
 
-            st.error("⚠️ Dieser Eintrag wird dauerhaft gelöscht.")
+            confirm_key = f"confirm_delete_{selected_entry['id']}"
 
-            c1, c2 = st.columns(2)
+            if confirm_key not in st.session_state:
+                st.session_state[confirm_key] = False
 
-            with c1:
-                if st.button(
-                    "Endgültig löschen",
-                    key=f"confirm_delete_btn_{selected_entry['id']}"
-                ):
-                    delete_entry(selected_entry["id"])
-                    st.session_state[confirm_key] = False
-                    st.success("Eintrag gelöscht.")
+            if not st.session_state[confirm_key]:
+
+                if st.button("Löschen", key=f"delete_btn_{selected_entry['id']}"):
+                    st.session_state[confirm_key] = True
                     st.rerun()
 
-            with c2:
-                if st.button(
-                    "Abbrechen",
-                    key=f"cancel_delete_{selected_entry['id']}"
-                ):
-                    st.session_state[confirm_key] = False
-                    st.rerun()
+            else:
 
-    with right:
+                st.error("⚠️ Dieser Eintrag wird dauerhaft gelöscht.")
 
-        st.text_area(
-            "Content",
-            value=selected_entry["content"],
-            height=500,
-            key=f"edit_content_{selected_entry['id']}"
-        )
+                c1, c2 = st.columns(2)
+
+                with c1:
+                    if st.button(
+                        "Endgültig löschen",
+                        key=f"confirm_delete_btn_{selected_entry['id']}"
+                    ):
+                        delete_entry(selected_entry["id"])
+                        st.session_state[confirm_key] = False
+                        st.success("Eintrag gelöscht.")
+                        st.rerun()
+
+                with c2:
+                    if st.button(
+                        "Abbrechen",
+                        key=f"cancel_delete_{selected_entry['id']}"
+                    ):
+                        st.session_state[confirm_key] = False
+                        st.rerun()
+
+        with right:
+
+            st.text_area(
+                "Content",
+                value=selected_entry["content"],
+                height=500,
+                key=f"edit_content_{selected_entry['id']}"
+            )
 
 # ==================================================
 # TAB 2 — NEUER EINTRAG
@@ -254,23 +254,50 @@ with tab_edit:
 
 with tab_create:
 
-    left, right = st.columns([1, 3])
+    # ----------------------------------------------
+    # CREATE STATE INITIALISIERUNG
+    # ----------------------------------------------
 
     default_tag_names = [
         t["name"] for t in all_tags if t.get("favourite")
     ]
 
+    if "reset_create_form" not in st.session_state:
+        st.session_state.reset_create_form = False
+    
+    if st.session_state.reset_create_form:
+        st.session_state.create_content = ""
+        st.session_state.create_use_mood = False
+        st.session_state.create_date = date.today()
+        st.session_state.create_tags = default_tag_names
+
+        if "create_mood" in st.session_state:
+            del st.session_state["create_mood"]
+
+        st.session_state.reset_create_form = False
+
+    left, right = st.columns([1, 3])
+
     with left:
 
         entry_date_input = st.date_input(
             "Datum",
-            value=date.today(),
+            # value=date.today(),
             key="create_date"
         )
 
+        tag_selection = st.multiselect(
+            "Tags",
+            list(tag_map.keys()),
+            # default=default_tag_names,
+            key="create_tags"
+        )
+
+        tag_ids = [tag_map[name] for name in tag_selection]
+
         use_mood = st.checkbox(
             "Mood speichern",
-            value=False,
+            # value=False,
             key="create_use_mood"
         )
 
@@ -284,15 +311,6 @@ with tab_create:
             )
         else:
             mood_input = None
-
-        tag_selection = st.multiselect(
-            "Tags",
-            list(tag_map.keys()),
-            default=default_tag_names,
-            key="create_tags"
-        )
-
-        tag_ids = [tag_map[name] for name in tag_selection]
 
         st.divider()
 
@@ -310,6 +328,7 @@ with tab_create:
                     tag_ids=tag_ids
                 )
 
+                st.session_state.reset_create_form = True
                 st.success("Eintrag erstellt.")
                 st.rerun()
 
@@ -320,7 +339,7 @@ with tab_create:
 
         st.text_area(
             "Content",
-            value="",
+            # value="",
             height=500,
             key="create_content"
         )
