@@ -1,9 +1,57 @@
+import os
+from dotenv import load_dotenv
 import streamlit as st
 from datetime import date
 
 st.set_page_config(layout="wide")
 
-st.title("LLM Chats")
+st.title("Chats")
+
+# --------------------------------------------------
+# DEFAULT USER FALLBACK
+# --------------------------------------------------
+
+load_dotenv()
+DEFAULT_USER_ID = os.getenv("DEFAULT_USER_ID")
+
+if not st.session_state.get("active_user_id") and DEFAULT_USER_ID:
+    st.session_state.active_user_id = DEFAULT_USER_ID
+
+user_id = st.session_state.get("active_user_id")
+
+if not user_id:
+    st.warning("Bitte zuerst einen User auswählen.")
+    st.stop()
+
+# --------------------------------------------------
+# Layout
+# --------------------------------------------------
+
+selected_chat = st.selectbox(
+    "Chat auswählen",
+    ["Chat 1", "Chat 2", "Chat 3"],
+    key="edit_chat"
+)
+
+
+
+st.button("Umbenennen")
+
+
+st.divider()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # ==================================================
 # SESSION STATE INITIALISIERUNG
@@ -17,17 +65,6 @@ if "llm_chats" not in st.session_state:
 if "active_chat" not in st.session_state:
     st.session_state.active_chat = "Erster Chat"
 
-# ==================================================
-# LAYOUT
-# ==================================================
-
-left, right = st.columns([1, 3])
-
-# ==================================================
-# LINKER BEREICH – CHAT MANAGEMENT
-# ==================================================
-
-with left:
 
     st.subheader("Chats")
 
@@ -51,11 +88,6 @@ with left:
             st.session_state.active_chat = new_chat_name
             st.rerun()
 
-# ==================================================
-# RECHTER BEREICH – CHAT INTERFACE
-# ==================================================
-
-with right:
 
     st.subheader(f"Chat: {st.session_state.active_chat}")
 

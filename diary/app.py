@@ -12,7 +12,6 @@ st.set_page_config(
 )
 
 st.title("Diary")
-st.caption("Arbeitskontext auswählen")
 
 users = list_users()
 active_user_id = st.session_state.get("active_user_id")
