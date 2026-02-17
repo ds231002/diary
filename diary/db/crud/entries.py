@@ -41,7 +41,12 @@ def create_entry(
             entry = cur.fetchone()
 
             if tag_ids:
-                sync_entry_tags(entry["id"], tag_ids, conn=conn)
+                sync_entry_tags(
+                    entry_id=entry["id"],
+                    user_id=user_id,
+                    tag_ids=tag_ids,
+                    conn=conn,
+                )
 
             return entry
 
@@ -49,13 +54,19 @@ def create_entry(
 # READ
 # ==============================
 
-def get_entry_by_id(entry_id: UUID) -> dict | None:
-    query = "SELECT * FROM entries WHERE id = %s;"
+def get_entry_by_id(entry_id: UUID, user_id: UUID) -> dict | None:
+    query = """
+    SELECT *
+    FROM entries
+    WHERE id = %s
+      AND user_id = %s;
+    """
 
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(query, (entry_id,))
+            cur.execute(query, (entry_id, user_id))
             return cur.fetchone()
+
 
 def list_entries_by_user(
     user_id: UUID,
@@ -67,6 +78,7 @@ def list_entries_by_user(
     limit: int = 50,
     offset: int = 0,
 ) -> list[dict]:
+
     conditions = ["user_id = %s"]
     values = [user_id]
 
@@ -100,7 +112,7 @@ def list_entries_by_user(
         with conn.cursor() as cur:
             cur.execute(query, values)
             return cur.fetchall()
-        
+
 # ==============================
 # UPDATE
 # ==============================
@@ -109,6 +121,7 @@ _UNSET = object()
 
 def update_entry(
     entry_id: UUID,
+    user_id: UUID,
     *,
     content: Optional[str] = _UNSET,
     entry_date: Optional[date] = _UNSET,
@@ -140,10 +153,11 @@ def update_entry(
     UPDATE entries
     SET {", ".join(fields)}
     WHERE id = %s
+      AND user_id = %s
     RETURNING *;
     """
 
-    values.append(entry_id)
+    values.extend([entry_id, user_id])
 
     with get_connection() as conn:
         with conn.cursor() as cur:
@@ -154,9 +168,13 @@ def update_entry(
 # DELETE
 # ==============================
 
-def delete_entry(entry_id: UUID) -> None:
-    query = "DELETE FROM entries WHERE id = %s;"
+def delete_entry(entry_id: UUID, user_id: UUID) -> None:
+    query = """
+    DELETE FROM entries
+    WHERE id = %s
+      AND user_id = %s;
+    """
 
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(query, (entry_id,))
+            cur.execute(query, (entry_id, user_id))

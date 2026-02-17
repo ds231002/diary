@@ -1,5 +1,7 @@
 from uuid import UUID
 from db.database import get_connection
+from typing import Optional
+from datetime import date
 
 # ==============================
 # CREATE
@@ -80,41 +82,58 @@ def list_chats_in_folder(user_id: UUID, folder_id: UUID) -> list[dict]:
 # UPDATE
 # ==============================
 
+_UNSET = object()
+
 def update_chat(
     chat_id: UUID,
     user_id: UUID,
     *,
-    title: str | None,
-    folder_id: UUID | None,
-    start_date=None,
-    end_date=None,
-    summary: str | None,
-) -> dict | None:
-    query = """
+    title: Optional[str] = _UNSET,
+    folder_id: Optional[UUID] = _UNSET,
+    start_date: Optional[date] = _UNSET,
+    end_date: Optional[date] = _UNSET,
+    summary: Optional[str] = _UNSET,
+) -> dict:
+
+    fields = []
+    values = []
+
+    if title is not _UNSET:
+        fields.append("title = %s")
+        values.append(title)
+
+    if folder_id is not _UNSET:
+        fields.append("folder_id = %s")
+        values.append(folder_id)
+
+    if start_date is not _UNSET:
+        fields.append("start_date = %s")
+        values.append(start_date)
+
+    if end_date is not _UNSET:
+        fields.append("end_date = %s")
+        values.append(end_date)
+
+    if summary is not _UNSET:
+        fields.append("summary = %s")
+        values.append(summary)
+
+    if not fields:
+        raise ValueError("No fields to update")
+
+    query = f"""
     UPDATE chats
-    SET title = %s,
-        folder_id = %s,
-        start_date = %s,
-        end_date = %s,
-        summary = %s
-    WHERE id = %s AND user_id = %s
+    SET {", ".join(fields)}
+    WHERE id = %s
+      AND user_id = %s
     RETURNING *;
     """
 
+    values.extend([chat_id, user_id])
+
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                query,
-                (
-                    title,
-                    folder_id,
-                    start_date,
-                    end_date,
-                    summary,
-                    chat_id,
-                    user_id,
-                ),
-            )
+            cur.execute(query, values)
             return cur.fetchone()
 
 # ==============================

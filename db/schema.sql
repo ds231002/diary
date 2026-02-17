@@ -57,6 +57,9 @@ CREATE TABLE entries (
 
   CONSTRAINT chk_entries_mood_range
     CHECK (mood IS NULL OR mood BETWEEN 0 AND 10),
+
+  CONSTRAINT uq_entries_id_user
+    UNIQUE (id, user_id),
   
   CONSTRAINT fk_entries_users
     FOREIGN KEY (user_id)
@@ -71,12 +74,16 @@ CREATE TABLE tags (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   name varchar NOT NULL,
+  description text,
   color text,
   position int,
   favourite boolean NOT NULL DEFAULT false,
 
   CONSTRAINT chk_tags_position
     CHECK (position IS NULL OR position >= 1),
+
+  CONSTRAINT uq_tags_id_user
+    UNIQUE (id, user_id),
   
   CONSTRAINT uq_tags_user_name
     UNIQUE (user_id, name),
@@ -98,6 +105,9 @@ CREATE TABLE folders (
 
   CONSTRAINT chk_folder_position
     CHECK (position IS NULL OR position >= 1),
+
+  CONSTRAINT uq_folders_id_user
+    UNIQUE (id, user_id),
   
   CONSTRAINT uq_folders_user_name
     UNIQUE (user_id, name),
@@ -123,6 +133,9 @@ CREATE TABLE chats (
   CONSTRAINT chk_chats_date_range
     CHECK (end_date IS NULL OR end_date >= start_date),
 
+  CONSTRAINT uq_chats_id_user
+    UNIQUE (id, user_id),
+
   CONSTRAINT fk_chats_users
     FOREIGN KEY (user_id)
     REFERENCES users(id)
@@ -130,8 +143,8 @@ CREATE TABLE chats (
     ON UPDATE CASCADE,
 
   CONSTRAINT fk_chats_folders
-    FOREIGN KEY (folder_id)
-    REFERENCES folders(id)
+    FOREIGN KEY (folder_id, user_id)
+    REFERENCES folders(id, user_id)
     ON DELETE SET NULL
     ON UPDATE CASCADE
 );
@@ -139,16 +152,20 @@ CREATE TABLE chats (
 CREATE TABLE messages (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   chat_id uuid NOT NULL,
+  user_id uuid NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   role varchar NOT NULL,
   content text NOT NULL,
 
   CONSTRAINT chk_messages_role
     CHECK (role IN ('user', 'assistant', 'system')),
-  
-  CONSTRAINT fk_messages_chats
-    FOREIGN KEY (chat_id)
-    REFERENCES chats(id)
+
+  CONSTRAINT uq_messages_id_user
+    UNIQUE (id, user_id),
+
+  CONSTRAINT fk_messages_chat_user
+    FOREIGN KEY (chat_id, user_id)
+    REFERENCES chats(id, user_id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
@@ -156,19 +173,20 @@ CREATE TABLE messages (
 CREATE TABLE entry_tags (
   entry_id uuid NOT NULL,
   tag_id uuid NOT NULL,
+  user_id uuid NOT NULL,
 
   CONSTRAINT pk_entry_tags
     PRIMARY KEY (entry_id, tag_id),
 
   CONSTRAINT fk_entry_tags_entries
-    FOREIGN KEY (entry_id)
-    REFERENCES entries(id)
+    FOREIGN KEY (entry_id, user_id)
+    REFERENCES entries(id, user_id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   
   CONSTRAINT fk_entry_tags_tags
-    FOREIGN KEY (tag_id)
-    REFERENCES tags(id)
+    FOREIGN KEY (tag_id, user_id)
+    REFERENCES tags(id, user_id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
@@ -176,19 +194,20 @@ CREATE TABLE entry_tags (
 CREATE TABLE chat_tags (
   chat_id uuid NOT NULL,
   tag_id uuid NOT NULL,
+  user_id uuid NOT NULL,
 
   CONSTRAINT pk_chat_tags
     PRIMARY KEY (chat_id, tag_id),
 
   CONSTRAINT fk_chat_tags_chats
-    FOREIGN KEY (chat_id)
-    REFERENCES chats(id)
+    FOREIGN KEY (chat_id, user_id)
+    REFERENCES chats(id, user_id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
 
   CONSTRAINT fk_chat_tags_tags
-    FOREIGN KEY (tag_id)
-    REFERENCES tags(id)
+    FOREIGN KEY (tag_id, user_id)
+    REFERENCES tags(id, user_id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );

@@ -181,8 +181,8 @@ with tab_edit:
     if filter_tag_ids:
         filtered = []
         for entry in entries:
-            entry_tags = list_tags_for_entry(entry["id"])
-            entry_tag_ids = [t["id"] for t in entry_tags]
+            tags_for_entry = list_tags_for_entry(entry["id"], user_id)
+            entry_tag_ids = [t["id"] for t in tags_for_entry]
 
             if any(tid in entry_tag_ids for tid in filter_tag_ids):
                 filtered.append(entry)
@@ -218,7 +218,7 @@ with tab_edit:
 
         entry_date, entry_tags = st.columns([1, 3])
 
-        tags = list_tags_for_entry(selected_entry["id"])
+        tags = list_tags_for_entry(selected_entry["id"], user_id)
         entry_tag_names = [t["name"] for t in tags]
 
         with entry_date:
@@ -265,6 +265,7 @@ with tab_edit:
 
                 sync_entry_tags(
                     selected_entry["id"],
+                    user_id,
                     tag_ids
                 )
 
@@ -295,7 +296,7 @@ with tab_edit:
                         "Endgültig löschen",
                         key=f"confirm_delete_btn_{selected_entry['id']}"
                     ):
-                        delete_entry(selected_entry["id"])
+                        delete_entry(selected_entry["id"], user_id)
                         st.session_state[confirm_key] = False
                         st.success("Eintrag gelöscht.")
                         st.rerun()
