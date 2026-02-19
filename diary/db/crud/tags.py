@@ -10,25 +10,28 @@ def create_tag(
     user_id: UUID,
     *,
     name: str,
-    description: str | None = None,
-    color: str | None = None,
-    position: int | None = None,
-    favourite: bool = False,
+    llm_default_allowed: bool | None = None,
 ) -> dict:
-    query = """
-    INSERT INTO tags (user_id, name, description, color, position, favourite)
-    VALUES (%s, %s, %s, %s, %s, %s)
-    RETURNING *;
-    """
-
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                query,
-                (user_id, name, description, color, position, favourite),
-            )
-            return cur.fetchone()
 
+            fields = ["user_id", "name"]
+            values = [user_id, name]
+            placeholders = ["%s", "%s"]
+
+            if llm_default_allowed is not None:
+                fields.append("llm_default_allowed")
+                values.append(llm_default_allowed)
+                placeholders.append("%s")
+
+            query = f"""
+            INSERT INTO tags ({", ".join(fields)})
+            VALUES ({", ".join(placeholders)})
+            RETURNING *;
+            """
+
+            cur.execute(query, values)
+            return cur.fetchone()
 
 # ==============================
 # READ
@@ -51,30 +54,27 @@ def get_tag_by_id(tag_id: UUID, user_id: UUID) -> dict | None:
 def list_tags_by_user(
     user_id: UUID,
     *,
-    include_favourites_first: bool = True,
+    llm_default_allowed: bool | None = None,
 ) -> list[dict]:
 
-    order_clause = """
-        ORDER BY favourite DESC,
-                 position NULLS LAST,
-                 name
-    """ if include_favourites_first else """
-        ORDER BY position NULLS LAST,
-                 name
-    """
+    conditions = ["user_id = %s"]
+    values = [user_id]
+
+    if llm_default_allowed is not None:
+        conditions.append("llm_default_allowed = %s")
+        values.append(llm_default_allowed)
 
     query = f"""
     SELECT *
     FROM tags
-    WHERE user_id = %s
-    {order_clause};
+    WHERE {" AND ".join(conditions)}
+    ORDER BY name ASC;
     """
 
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(query, (user_id,))
+            cur.execute(query, values)
             return cur.fetchall()
-
 
 # ==============================
 # UPDATE
@@ -87,10 +87,7 @@ def update_tag(
     user_id: UUID,
     *,
     name: Optional[str] = _UNSET,
-    description: Optional[str] = _UNSET,
-    color: Optional[str] = _UNSET,
-    position: Optional[int] = _UNSET,
-    favourite: Optional[bool] = _UNSET,
+    llm_default_allowed: Optional[bool] = _UNSET,
 ) -> dict:
 
     fields = []
@@ -100,21 +97,9 @@ def update_tag(
         fields.append("name = %s")
         values.append(name)
 
-    if description is not _UNSET:
-        fields.append("description = %s")
-        values.append(description)
-
-    if color is not _UNSET:
-        fields.append("color = %s")
-        values.append(color)
-
-    if position is not _UNSET:
-        fields.append("position = %s")
-        values.append(position)
-
-    if favourite is not _UNSET:
-        fields.append("favourite = %s")
-        values.append(favourite)
+    if llm_default_allowed is not _UNSET:
+        fields.append("llm_default_allowed = %s")
+        values.append(llm_default_allowed)
 
     if not fields:
         raise ValueError("No fields to update")
@@ -133,7 +118,6 @@ def update_tag(
         with conn.cursor() as cur:
             cur.execute(query, values)
             return cur.fetchone()
-
 
 # ==============================
 # DELETE

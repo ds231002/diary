@@ -53,6 +53,7 @@ CREATE TABLE entries (
   entry_date date NOT NULL DEFAULT CURRENT_DATE,
   content text NOT NULL,
   mood int,
+  llm_allowed boolean NOT NULL DEFAULT true,
   embedding vector,
 
   CONSTRAINT chk_entries_mood_range
@@ -78,6 +79,7 @@ CREATE TABLE tags (
   color text,
   position int,
   favourite boolean NOT NULL DEFAULT false,
+  llm_default_allowed boolean NOT NULL DEFAULT true,
 
   CONSTRAINT chk_tags_position
     CHECK (position IS NULL OR position >= 1),

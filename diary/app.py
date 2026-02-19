@@ -16,7 +16,7 @@ st.title("Diary")
 users = list_users()
 active_user_id = st.session_state.get("active_user_id")
 
-st.subheader("Bestehende User")
+st.subheader("User")
 
 if not users:
     st.info("Noch keine User vorhanden.")

@@ -15,29 +15,37 @@ def create_entry(
     entry_date: date | None = None,
     mood: int | None = None,
     tag_ids: list[UUID] | None = None,
+    llm_allowed: bool | None = None,
 ) -> dict:
     with get_connection() as conn:
         with conn.cursor() as cur:
 
-            if entry_date is None:
-                cur.execute(
-                    """
-                    INSERT INTO entries (user_id, content, mood)
-                    VALUES (%s, %s, %s)
-                    RETURNING *;
-                    """,
-                    (user_id, content, mood),
-                )
-            else:
-                cur.execute(
-                    """
-                    INSERT INTO entries (user_id, entry_date, content, mood)
-                    VALUES (%s, %s, %s, %s)
-                    RETURNING *;
-                    """,
-                    (user_id, entry_date, content, mood),
-                )
+            fields = ["user_id", "content"]
+            values = [user_id, content]
+            placeholders = ["%s", "%s"]
 
+            if entry_date is not None:
+                fields.append("entry_date")
+                values.append(entry_date)
+                placeholders.append("%s")
+
+            if mood is not None:
+                fields.append("mood")
+                values.append(mood)
+                placeholders.append("%s")
+
+            if llm_allowed is not None:
+                fields.append("llm_allowed")
+                values.append(llm_allowed)
+                placeholders.append("%s")
+
+            query = f"""
+            INSERT INTO entries ({", ".join(fields)})
+            VALUES ({", ".join(placeholders)})
+            RETURNING *;
+            """
+
+            cur.execute(query, values)
             entry = cur.fetchone()
 
             if tag_ids:
@@ -67,7 +75,6 @@ def get_entry_by_id(entry_id: UUID, user_id: UUID) -> dict | None:
             cur.execute(query, (entry_id, user_id))
             return cur.fetchone()
 
-
 def list_entries_by_user(
     user_id: UUID,
     *,
@@ -75,6 +82,7 @@ def list_entries_by_user(
     to_date: date | None = None,
     mood_min: int | None = None,
     mood_max: int | None = None,
+    llm_allowed: bool | None = None,
     limit: int = 50,
     offset: int = 0,
 ) -> list[dict]:
@@ -98,6 +106,10 @@ def list_entries_by_user(
         conditions.append("mood <= %s")
         values.append(mood_max)
 
+    if llm_allowed is not None:
+        conditions.append("llm_allowed = %s")
+        values.append(llm_allowed)
+
     query = f"""
     SELECT *
     FROM entries
@@ -113,6 +125,7 @@ def list_entries_by_user(
             cur.execute(query, values)
             return cur.fetchall()
 
+
 # ==============================
 # UPDATE
 # ==============================
@@ -126,6 +139,7 @@ def update_entry(
     content: Optional[str] = _UNSET,
     entry_date: Optional[date] = _UNSET,
     mood: Optional[int] = _UNSET,
+    llm_allowed: Optional[bool] = _UNSET,
 ) -> dict:
 
     fields = []
@@ -146,6 +160,10 @@ def update_entry(
             fields.append("mood = %s")
             values.append(mood)
 
+    if llm_allowed is not _UNSET:
+        fields.append("llm_allowed = %s")
+        values.append(llm_allowed)
+
     if not fields:
         raise ValueError("No fields to update")
 
@@ -163,6 +181,7 @@ def update_entry(
         with conn.cursor() as cur:
             cur.execute(query, values)
             return cur.fetchone()
+
 
 # ==============================
 # DELETE
