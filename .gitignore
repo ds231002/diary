@@ -2,5 +2,6 @@ __pycache__
 
 entries/
 .env
+.DS_Store
 data
 notes.txt
