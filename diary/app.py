@@ -59,7 +59,7 @@ else:
             with col2:
                 if st.button("Öffnen", key=f"open_{user['id']}"):
                     st.session_state.active_user_id = user["id"]
-                    st.switch_page("pages/01_Entries.py")
+                    st.switch_page("pages/01_entries.py")
 
             with col3:
                 if st.button("✏️", key=f"rename_toggle_{user['id']}"):
