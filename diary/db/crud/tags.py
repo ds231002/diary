@@ -10,6 +10,10 @@ def create_tag(
     user_id: UUID,
     *,
     name: str,
+    description: str | None = None,
+    color: str | None = None,
+    position: int | None = None,
+    favourite: bool | None = None,
     llm_default_allowed: bool | None = None,
 ) -> dict:
     with get_connection() as conn:
@@ -18,6 +22,26 @@ def create_tag(
             fields = ["user_id", "name"]
             values = [user_id, name]
             placeholders = ["%s", "%s"]
+
+            if description is not None:
+                fields.append("description")
+                values.append(description)
+                placeholders.append("%s")
+
+            if color is not None:
+                fields.append("color")
+                values.append(color)
+                placeholders.append("%s")
+
+            if position is not None:
+                fields.append("position")
+                values.append(position)
+                placeholders.append("%s")
+
+            if favourite is not None:
+                fields.append("favourite")
+                values.append(favourite)
+                placeholders.append("%s")
 
             if llm_default_allowed is not None:
                 fields.append("llm_default_allowed")
@@ -87,6 +111,10 @@ def update_tag(
     user_id: UUID,
     *,
     name: Optional[str] = _UNSET,
+    description: Optional[str] = _UNSET,
+    color: Optional[str] = _UNSET,
+    position: Optional[int] = _UNSET,
+    favourite: Optional[bool] = _UNSET,
     llm_default_allowed: Optional[bool] = _UNSET,
 ) -> dict:
 
@@ -96,6 +124,22 @@ def update_tag(
     if name is not _UNSET:
         fields.append("name = %s")
         values.append(name)
+
+    if description is not _UNSET:
+        fields.append("description = %s")
+        values.append(description)
+
+    if color is not _UNSET:
+        fields.append("color = %s")
+        values.append(color)
+
+    if position is not _UNSET:
+        fields.append("position = %s")
+        values.append(position)
+
+    if favourite is not _UNSET:
+        fields.append("favourite = %s")
+        values.append(favourite)
 
     if llm_default_allowed is not _UNSET:
         fields.append("llm_default_allowed = %s")

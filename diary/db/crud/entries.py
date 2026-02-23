@@ -62,19 +62,88 @@ def create_entry(
 # READ
 # ==============================
 
+from uuid import UUID
+from psycopg2.extras import RealDictCursor
+
+
 def get_entry_by_id(entry_id: UUID, user_id: UUID) -> dict | None:
     query = """
-    SELECT *
-    FROM entries
-    WHERE id = %s
-      AND user_id = %s;
+        SELECT 
+            e.id,
+            e.user_id,
+            e.entry_date,
+            e.content,
+            e.mood,
+            e.llm_allowed,
+            e.created_at,
+            e.updated_at,
+            t.id   AS tag_id,
+            t.name AS tag_name,
+            t.color,
+            t.favourite,
+            t.llm_default_allowed
+        FROM entries e
+        LEFT JOIN entry_tags et
+            ON et.entry_id = e.id
+           AND et.user_id = e.user_id
+        LEFT JOIN tags t
+            ON t.id = et.tag_id
+           AND t.user_id = e.user_id
+        WHERE e.id = %s
+          AND e.user_id = %s
+        ORDER BY t.position NULLS LAST;
     """
 
     with get_connection() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query, (entry_id, user_id))
-            return cur.fetchone()
+            rows = cur.fetchall()
 
+            if not rows:
+                return None
+
+            # Grunddaten aus erster Zeile
+            first = rows[0]
+
+            entry = {
+                "id": first["id"],
+                "user_id": first["user_id"],
+                "entry_date": first["entry_date"],
+                "content": first["content"],
+                "mood": first["mood"],
+                "llm_allowed": first["llm_allowed"],
+                "created_at": first["created_at"],
+                "updated_at": first["updated_at"],
+                "tags": [],
+            }
+
+            # Tags sammeln (falls vorhanden)
+            for row in rows:
+                if row["tag_id"] is not None:
+                    entry["tags"].append({
+                        "id": row["tag_id"],
+                        "name": row["tag_name"],
+                        "color": row["color"],
+                        "favourite": row["favourite"],
+                        "llm_default_allowed": row["llm_default_allowed"],
+                    })
+
+            return entry
+
+
+# def get_entry_by_id(entry_id: UUID, user_id: UUID) -> dict | None:
+#     query = """
+#     SELECT *
+#     FROM entries
+#     WHERE id = %s
+#       AND user_id = %s;
+#     """
+
+#     with get_connection() as conn:
+#         with conn.cursor() as cur:
+#             cur.execute(query, (entry_id, user_id))
+#             return cur.fetchone()
+        
 def list_entries_by_user(
     user_id: UUID,
     *,
@@ -83,38 +152,96 @@ def list_entries_by_user(
     mood_min: int | None = None,
     mood_max: int | None = None,
     llm_allowed: bool | None = None,
+    tag_ids: list[UUID] | None = None,
+    include_untagged: bool = False,
     limit: int = 50,
     offset: int = 0,
 ) -> list[dict]:
 
-    conditions = ["user_id = %s"]
+    conditions = ["e.user_id = %s"]
     values = [user_id]
 
+    joins = ""
+    distinct = ""
+
+    # ----------------------------------------
+    # Basis-Filter
+    # ----------------------------------------
+
     if from_date is not None:
-        conditions.append("entry_date >= %s")
+        conditions.append("e.entry_date >= %s")
         values.append(from_date)
 
     if to_date is not None:
-        conditions.append("entry_date <= %s")
+        conditions.append("e.entry_date <= %s")
         values.append(to_date)
 
     if mood_min is not None:
-        conditions.append("mood >= %s")
+        conditions.append("e.mood >= %s")
         values.append(mood_min)
 
     if mood_max is not None:
-        conditions.append("mood <= %s")
+        conditions.append("e.mood <= %s")
         values.append(mood_max)
 
     if llm_allowed is not None:
-        conditions.append("llm_allowed = %s")
+        conditions.append("e.llm_allowed = %s")
         values.append(llm_allowed)
 
+    # ----------------------------------------
+    # Tag-Logik
+    # ----------------------------------------
+
+    if tag_ids is not None:
+        joins = """
+        LEFT JOIN entry_tags et
+          ON e.id = et.entry_id
+         AND e.user_id = et.user_id
+        """
+        distinct = "DISTINCT"
+
+        if tag_ids and include_untagged:
+            conditions.append(
+                "(et.tag_id = ANY(%s::uuid[]) OR et.entry_id IS NULL)"
+            )
+            values.append(tag_ids)
+
+        elif tag_ids:
+            conditions.append("et.tag_id = ANY(%s::uuid[])")
+            values.append(tag_ids)
+
+        elif include_untagged:
+            conditions.append("et.entry_id IS NULL")
+
+        else:
+            conditions.append("FALSE")
+
+    # ----------------------------------------
+    # Query
+    # ----------------------------------------
+
     query = f"""
-    SELECT *
-    FROM entries
+    SELECT
+        e.*,
+        COALESCE(
+            json_agg(
+                DISTINCT jsonb_build_object(
+                    'id', t.id,
+                    'name', t.name
+                )
+            ) FILTER (WHERE t.id IS NOT NULL),
+            '[]'
+        ) AS tags
+    FROM entries e
+    LEFT JOIN entry_tags et
+    ON e.id = et.entry_id
+    AND e.user_id = et.user_id
+    LEFT JOIN tags t
+    ON et.tag_id = t.id
+    AND et.user_id = t.user_id
     WHERE {" AND ".join(conditions)}
-    ORDER BY entry_date DESC, created_at DESC
+    GROUP BY e.id
+    ORDER BY e.entry_date DESC, e.created_at DESC
     LIMIT %s OFFSET %s;
     """
 
@@ -124,7 +251,6 @@ def list_entries_by_user(
         with conn.cursor() as cur:
             cur.execute(query, values)
             return cur.fetchall()
-
 
 # ==============================
 # UPDATE
@@ -181,7 +307,6 @@ def update_entry(
         with conn.cursor() as cur:
             cur.execute(query, values)
             return cur.fetchone()
-
 
 # ==============================
 # DELETE

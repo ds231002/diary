@@ -18,7 +18,10 @@ from db.crud.messages import (
 # PAGE CONFIG
 # ==================================================
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Chats",
+    layout="wide"
+    )
 
 # ==================================================
 # USER HANDLING

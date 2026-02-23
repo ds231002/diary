@@ -9,7 +9,10 @@ from db.crud.tags import (
     delete_tag,
 )
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Tags",
+    layout="wide"
+    )
 
 # --------------------------------------------------
 # DEFAULT USER FALLBACK

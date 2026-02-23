@@ -19,7 +19,10 @@ from db.crud.entry_tags import (
 # PAGE CONFIG
 # ==================================================
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Einträge",
+    layout="wide"
+    )
 
 # ==================================================
 # DEFAULT USER
@@ -199,18 +202,25 @@ with tab_edit:
         # SELECT ENTRY
         # ----------------------------------------------
 
-        entry_map = {
-            f"{e['entry_date']} – {e['content'][:100]}": e
-            for e in entries
-        }
+        # entry_map = {
+        #     f"{e['entry_date']} – {e['content'][:100]}": e
+        #     for e in entries
+        # }
 
-        selected_label = st.selectbox(
+        # selected_label = st.selectbox(
+        #     "Eintrag auswählen",
+        #     list(entry_map.keys()),
+        #     key="edit_select"
+        # )
+
+        selected_entry = st.selectbox(
             "Eintrag auswählen",
-            list(entry_map.keys()),
+            entries,
+            format_func=lambda e: f"{e['entry_date']} – {e['content'][:100]}",
             key="edit_select"
         )
 
-        selected_entry = entry_map[selected_label]
+        # selected_entry = entry_map[selected_label]
 
         st.divider()
 
