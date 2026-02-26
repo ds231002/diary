@@ -66,7 +66,10 @@ CREATE TABLE entries (
     FOREIGN KEY (user_id)
     REFERENCES users(id)
     ON DELETE CASCADE
-    ON UPDATE CASCADE
+    ON UPDATE CASCADE,
+  
+  CONSTRAINT chk_entries_embedding_llm_consistency
+    CHECK (llm_allowed=true OR embedding IS NULL)
 );
 
 CREATE TABLE tags (
