@@ -44,6 +44,7 @@ def get_response(
     client: OpenAI,
     model: str,
     user_input: str,
+    tools: list[dict] | None = None,
     systeminformation: str | None = None,
     response_model: type[BaseModel] | None = None,
 ):
@@ -58,6 +59,7 @@ def get_response(
         response = client.responses.parse(
             model=model,
             input=messages,
+            tools=tools
             text_format=response_model,
         )
 
@@ -66,6 +68,7 @@ def get_response(
     response = client.responses.create(
         model=model,
         input=messages,
+        tools=tools
     )
 
     return response
