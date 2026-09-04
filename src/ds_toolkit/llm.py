@@ -59,7 +59,7 @@ def get_response(
         response = client.responses.parse(
             model=model,
             input=messages,
-            tools=tools
+            tools=tools,
             text_format=response_model,
         )
 
@@ -68,7 +68,7 @@ def get_response(
     response = client.responses.create(
         model=model,
         input=messages,
-        tools=tools
+        tools=tools,
     )
 
     return response
