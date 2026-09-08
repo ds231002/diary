@@ -1,0 +1,379 @@
+[
+  {
+    "type": "function",
+    "name": "get_participation_factor",
+    "description": "Liefert den Teilnahmefaktor eines Zählpunkts.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "metering_point_id": {
+          "type": "string",
+          "description": "Eindeutige ID des Zählpunkts."
+        }
+      },
+      "required": [
+        "metering_point_id"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "get_current_energy",
+    "description": "Liefert die aktuell gemessene elektrische Leistung eines Zählpunkts. Die Art des Zählpunkts bestimmt, ob der Wert den Verbrauch oder die Erzeugung beschreibt.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "metering_point_id": {
+          "type": "string",
+          "description": "Eindeutige ID des Zählpunkts."
+        }
+      },
+      "required": [
+        "metering_point_id"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "get_community_consumption",
+    "description": "Liefert den Gesamtverbrauch der Energiegemeinschaft für einen definierten Zeitraum.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "string",
+          "description": "Startzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Startzeitpunkt ist eingeschlossen."
+        },
+        "end": {
+          "type": "string",
+          "description": "Endzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Endzeitpunkt ist ausgeschlossen."
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "get_community_generation",
+    "description": "Liefert die Gesamterzeugung der Energiegemeinschaft für einen definierten Zeitraum als Grafik.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "string",
+          "description": "Startzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Startzeitpunkt ist eingeschlossen."
+        },
+        "end": {
+          "type": "string",
+          "description": "Endzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Endzeitpunkt ist ausgeschlossen."
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "get_measured_energy",
+    "description": "Liefert die gemessene Energie eines Zählpunkts für einen definierten Zeitraum als Grafik. Die Art des Zählpunkts bestimmt, ob der Wert den Verbrauch oder die Erzeugung beschreibt.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "metering_point_id": {
+          "type": "string",
+          "description": "Eindeutige ID des Zählpunkts."
+        },
+        "start": {
+          "type": "string",
+          "description": "Startzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Startzeitpunkt ist eingeschlossen."
+        },
+        "end": {
+          "type": "string",
+          "description": "Endzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Endzeitpunkt ist ausgeschlossen."
+        }
+      },
+      "required": [
+        "metering_point_id",
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "calc_statistical_value",
+    "description": "Berechnet einen statistischen Kennwert der gemessenen Energie eines Zählpunkts für einen definierten Zeitraum.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "metering_point_id": {
+          "type": "string",
+          "description": "Eindeutige ID des Zählpunkts."
+        },
+        "start": {
+          "type": "string",
+          "description": "Startzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Startzeitpunkt ist eingeschlossen."
+        },
+        "end": {
+          "type": "string",
+          "description": "Endzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Endzeitpunkt ist ausgeschlossen."
+        },
+        "statistic_type": {
+          "type": "string",
+          "description": "Der zu berechnende statistische Kennwert. Zulässige Werte sind sum, avg, min und max."
+        }
+      },
+      "required": [
+        "metering_point_id",
+        "start",
+        "end",
+        "statistic_type"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "add_timeseries",
+    "description": "Addiert die gemessenen Energiewerte zweier Zählpunkte für jedes Messintervall und erzeugt eine Grafik.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "metering_point_id_1": {
+          "type": "string",
+          "description": "Eindeutige ID des ersten Zählpunkts."
+        },
+        "metering_point_id_2": {
+          "type": "string",
+          "description": "Eindeutige ID des zweiten Zählpunkts."
+        },
+        "start": {
+          "type": "string",
+          "description": "Startzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Startzeitpunkt ist eingeschlossen."
+        },
+        "end": {
+          "type": "string",
+          "description": "Endzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Endzeitpunkt ist ausgeschlossen."
+        }
+      },
+      "required": [
+        "metering_point_id_1",
+        "metering_point_id_2",
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "subtract_timeseries",
+    "description": "Subtrahiert die gemessenen Energiewerte eines Zählpunkts von den gemessenen Energiewerten eines anderen Zählpunkts für jedes Messintervall und erzeugt eine Grafik.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "metering_point_id_minuend": {
+          "type": "string",
+          "description": "Eindeutige ID des Zählpunkts, von dessen Zeitreihe subtrahiert wird."
+        },
+        "metering_point_id_subtrahend": {
+          "type": "string",
+          "description": "Eindeutige ID des Zählpunkts, dessen Zeitreihe subtrahiert wird."
+        },
+        "start": {
+          "type": "string",
+          "description": "Startzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Startzeitpunkt ist eingeschlossen."
+        },
+        "end": {
+          "type": "string",
+          "description": "Endzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Endzeitpunkt ist ausgeschlossen."
+        }
+      },
+      "required": [
+        "metering_point_id_minuend",
+        "metering_point_id_subtrahend",
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "multiply_timeseries",
+    "description": "Multipliziert die gemessenen Energiewerte eines Zählpunkts für jedes Messintervall mit einem Faktor und erzeugt eine Grafik.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "metering_point_id": {
+          "type": "string",
+          "description": "Eindeutige ID des Zählpunkts."
+        },
+        "start": {
+          "type": "string",
+          "description": "Startzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Startzeitpunkt ist eingeschlossen."
+        },
+        "end": {
+          "type": "string",
+          "description": "Endzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Endzeitpunkt ist ausgeschlossen."
+        },
+        "factor": {
+          "type": "number",
+          "description": "Faktor, mit dem die Energiewerte multipliziert werden."
+        }
+      },
+      "required": [
+        "metering_point_id",
+        "start",
+        "end",
+        "factor"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "divide_timeseries",
+    "description": "Dividiert die gemessenen Energiewerte eines Zählpunkts für jedes Messintervall durch einen Divisor und erzeugt eine Grafik.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "metering_point_id": {
+          "type": "string",
+          "description": "Eindeutige ID des Zählpunkts."
+        },
+        "start": {
+          "type": "string",
+          "description": "Startzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Startzeitpunkt ist eingeschlossen."
+        },
+        "end": {
+          "type": "string",
+          "description": "Endzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Endzeitpunkt ist ausgeschlossen."
+        },
+        "divisor": {
+          "type": "number",
+          "description": "Divisor, durch den die Energiewerte dividiert werden. Darf nicht 0 sein."
+        }
+      },
+      "required": [
+        "metering_point_id",
+        "start",
+        "end",
+        "divisor"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "calculate_weighted_measured_energy",
+    "description": "Berechnet die gemäß Teilnahmefaktor gewichtete gemessene Energie eines Zählpunkts für einen definierten Zeitraum und erzeugt eine Grafik.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "metering_point_id": {
+          "type": "string",
+          "description": "Eindeutige ID des Zählpunkts."
+        },
+        "start": {
+          "type": "string",
+          "description": "Startzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Startzeitpunkt ist eingeschlossen."
+        },
+        "end": {
+          "type": "string",
+          "description": "Endzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Endzeitpunkt ist ausgeschlossen."
+        }
+      },
+      "required": [
+        "metering_point_id",
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "calculate_community_potential",
+    "description": "Berechnet für einen Zählpunkt dessen potenziellen Anteil an der Gesamterzeugung der Energiegemeinschaft für einen definierten Zeitraum und erzeugt eine Grafik.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "metering_point_id": {
+          "type": "string",
+          "description": "Eindeutige ID des Zählpunkts."
+        },
+        "start": {
+          "type": "string",
+          "description": "Startzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Startzeitpunkt ist eingeschlossen."
+        },
+        "end": {
+          "type": "string",
+          "description": "Endzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Endzeitpunkt ist ausgeschlossen."
+        }
+      },
+      "required": [
+        "metering_point_id",
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "calculate_community_coverage",
+    "description": "Berechnet die Eigenabdeckung eines Verbrauchszählpunkts für einen definierten Zeitraum und erzeugt eine Grafik.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "metering_point_id": {
+          "type": "string",
+          "description": "Eindeutige ID des Verbrauchszählpunkts."
+        },
+        "start": {
+          "type": "string",
+          "description": "Startzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Startzeitpunkt ist eingeschlossen."
+        },
+        "end": {
+          "type": "string",
+          "description": "Endzeitpunkt des Zeitraums im Format YYYY-MM-DD HH:MM:SS. Der Endzeitpunkt ist ausgeschlossen."
+        }
+      },
+      "required": [
+        "metering_point_id",
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "request_not_supported",
+    "description": "Teilt dem Benutzer mit, dass eine Anfrage nicht unterstützt wird.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Nachricht, die dem Benutzer mitgeteilt werden soll."
+        }
+      },
+      "required": [
+        "message"
+      ],
+      "additionalProperties": false
+    }
+  }
+]

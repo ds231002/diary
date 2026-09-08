@@ -1,5 +1,6 @@
 import os
 from openai import OpenAI
+from openai.types.responses import Response
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -72,3 +73,38 @@ def get_response(
     )
 
     return response
+
+def _get_items_by_type(response: Response, type_: str) -> list:
+    return [
+        item
+        for item in response.output
+        if item.type == type_
+    ]
+
+def _get_first_item_by_type(response: Response, type_: str):
+    return next(
+        (
+            item
+            for item in response.output
+            if item.type == type_
+        ),
+        None
+    )
+
+def get_text(response: Response) -> str:
+    return response.output_text
+
+def has_tool_calls(response: Response) -> bool:
+    return any(
+        item.type == "function_call"
+        for item in response.output
+    )
+
+def get_tool_calls(response: Response) -> list:
+    return _get_items_by_type(response, "function_call")
+
+def get_reasoning(response: Response) -> list:
+    return _get_items_by_type(response, "reasoning")
+
+def get_usage(response: Response):
+    return response.usage

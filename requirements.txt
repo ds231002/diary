@@ -1,3 +1,9 @@
+# diary
+streamlit==1.54.0
+psycopg2-binary==2.9.10
+python-dotenv==1.0.1
+
+#ds_tools
 python-dotenv
 openpyxl==3.1.5
 faiss-cpu==1.13.0
