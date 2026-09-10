@@ -44,6 +44,12 @@ def read_csv(
 def load_xlsx(path: str | Path) -> pd.DataFrame:
     return pd.read_excel(path)
 
+# ===== TXT =====
+
+def load_txt_line_by_line(file_path: str):
+    with open(file_path, encoding="utf-8") as f:
+        return [line.strip() for line in f if line.strip()]
+
 # ===== PLOT =====
 
 def save_plot(
