@@ -4,6 +4,7 @@ from openai.types.responses import Response
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
 # models_openai = ["gpt-5.4-mini", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna"]
@@ -22,33 +23,14 @@ def get_client(provider: str) -> OpenAI:
 
     raise ValueError(f"Unknown provider: {provider}")
 
-tools = [
-    {
-        "type": "function",
-        "name": "search_documents",
-        "description": "Search documents in the local document database.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "query": {
-                    "type": "string",
-                    "description": "The search query",
-                },
-            },
-            "required": ["query"],
-            "additionalProperties": False,
-        },
-    }
-]
-
 def get_response(
     client: OpenAI,
     model: str,
     user_input: str,
-    tools: list[dict] | None = None,
+    tools: list[dict] = [],
     systeminformation: str | None = None,
-    response_model: type[BaseModel] | None = None,
-):
+    text_format: type[BaseModel] | None = None,
+):  
     messages = []
 
     if systeminformation:
@@ -56,12 +38,12 @@ def get_response(
 
     messages.append({"role": "user", "content": user_input})
 
-    if response_model:
+    if text_format:
         response = client.responses.parse(
             model=model,
             input=messages,
             tools=tools,
-            text_format=response_model,
+            text_format=text_format,
         )
 
         return response
@@ -108,3 +90,22 @@ def get_reasoning(response: Response) -> list:
 
 def get_usage(response: Response):
     return response.usage
+
+# tools = [
+#     {
+#         "type": "function",
+#         "name": "search_documents",
+#         "description": "Search documents in the local document database.",
+#         "parameters": {
+#             "type": "object",
+#             "properties": {
+#                 "query": {
+#                     "type": "string",
+#                     "description": "The search query",
+#                 },
+#             },
+#             "required": ["query"],
+#             "additionalProperties": False,
+#         },
+#     }
+# ]

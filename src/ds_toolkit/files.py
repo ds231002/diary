@@ -2,6 +2,7 @@ import json
 import pandas as pd
 from pathlib import Path
 
+
 # ===== PATH =====
 
 def path_exists(path: str | Path) -> bool:

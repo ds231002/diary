@@ -1,23 +1,10 @@
 import faiss
 import numpy as np
 from pathlib import Path
-from sentence_transformers import SentenceTransformer
+
 from ds_toolkit.files import ensure_parent
+from ds_toolkit.embeddings import embed_texts
 
-def get_sentence_transformer(
-    model: str = "BAAI/bge-m3",
-) -> SentenceTransformer:
-    return SentenceTransformer(model)
-
-def embed_texts(
-    texts: list[str],
-    embedder,
-):
-    return embedder.encode(
-        texts,
-        convert_to_numpy=True,
-        normalize_embeddings=True,
-    )
 
 def build_faiss_index(
     chunks: list[str],
@@ -43,22 +30,14 @@ def save_index(
 def load_index(path: str | Path):
     return faiss.read_index(str(path))
 
-def search_similar_chunks(
-    query: str,
+def search_index(
+    query_embedding: np.ndarray,
     index,
-    chunks: list[str],
-    embedder,
-    k: int=5
+    k: int = 5,
 ):
-    embedding = embed_texts([query], embedder)
-
     scores, indices = index.search(
-        embedding.astype(np.float32),
+        query_embedding.astype(np.float32),
         k,
     )
 
-    return [
-        (chunks[i], float(scores[0][j]))
-        for j, i in enumerate(indices[0])
-        if i != -1
-    ]
+    return scores, indices
