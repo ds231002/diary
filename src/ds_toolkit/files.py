@@ -13,6 +13,18 @@ def ensure_parent(path: str | Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     return path
 
+def modify_path(
+    file_path: str,
+    name_suffix: str = "",
+    file_suffix: str | None = None
+) -> Path:
+    path = Path(file_path)
+
+    if file_suffix is None:
+        file_suffix = path.suffix
+
+    return path.with_name(path.stem + name_suffix + file_suffix)
+
 # ===== JSON =====
 
 def load_json(path: str) -> dict:
